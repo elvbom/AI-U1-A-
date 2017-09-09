@@ -3,73 +3,106 @@ carReady = function(roads, car, packages) {
   hroads = roads$hroads # horizontal road costs
   vroads = roads$vroads # vertical road costs
   
-  currX = car$x # current x position
-  currY = car$y # current y position
+  x = car$x # current x position
+  y = car$y # current y position
   load = car$load # current package load
   mem = car$mem # list with info saved between turns
   nextMove = 0 # what the car will do next move (2 down, 4 left, 6 right, 8 up, 5 stay still)
   
-# (3) A matrix containing information about the packages. This contains five columns and a row for each package. 
-  # The first two columns give x and y coordinates about where the package should be picked up from. 
-  # The next two columns give x and y coordinates about where the package should be delivered to. 
-  # The final column specifies the package status (0 is not picked up, 1 is picked up but not delivered, 2 is delivered).
-
   toGo = 0
   offset = 0
   
   if (load == 0) { # no package onboard
-    # will find the nearest package with A*
-    pack = closestPack(car, packages)[1]
-    toGo = which(packages[,5]==0)[1]
+    toGo = closestPack(car, packages)
   } else {
-    toGo = load  
+    toGo = aStar(roads, car, packages) # toGo = index i packages för paket som ska levereras
     offset = 2
   }
   
-  if (currX < packages[toGo, 1+offset]) {
+  if (x < packages[toGo, 1+offset]) { # denna är utan a* bara vad som är närmast utan att tänka på kostnad
     nextMove = 6 # right
-  } else if (currX > packages[toGo, 1+offset]) {
+  } else if (x > packages[toGo, 1+offset]) {
     nextMove = 4 # left
-  } else if (currY < packages[toGo, 2+offset]) {
+  } else if (y < packages[toGo, 2+offset]) {
     nextMove = 8 # up
-  } else if (currY > packages[toGo, 2+offset]) {
+  } else if (y > packages[toGo, 2+offset]) {
     nextMove = 2 # down
   } else {
     nextMove = 5
   }
   
   car$nextMove = nextMove
-  car$mem = list()
   return(car)
 }
 
-aStar = function(car, goal, roads) { # A* algorithm
+aStar = function(roads, car, packages) { # A* algorithm
+  vroads = roads$vroads
+  hroads = roads$hroads
+  x = car$x # current x position
+  y = car$y # current y position
+  load = car$load
+  goal = list(x = packages[load, 1], y = packages[load, 2])
+  
+  cost = matrix(c(100, 100, 100, 100), ncol=1, nrow = 4)
+  
+  nb = neighbours(roads, car)
+  #FIXME OK så måste beräkna längre än 1 nod... 
+  #FIXME skriv funktion som besöker hela planen med visited och frontiers
+  if (y < grid) { # up
+    cost[1] = heuristic(x, y, goal) + vroads[x, y+1]
+  }
+  if (y > 1) { # down
+    cost[3] = heuristic(x, y, goal) + vroads[x, y-1]
+  }
+  if (x < grid) { # right
+    cost[2] = heuristic(x, y, goal) + hroads[x+1, y]
+  }
+  if (x > 1) { # left
+    cost[4] = heuristic(x, y, goal) + hroads[x-1, y]
+  }
+  
+  print(cost[(which(cost == min(cost)))[1]])
+  print(cost)
+  return(car$load)
 }
 
-heuristic = function(currX, currY, goal) { # Calculate heuristic function
-} 
-
-closestPack = function(car, packages) {
-  # calculates which unpicked package is closest to the car, using A*
-  packLeft = which(packages[, 5] == 0) # finds unpicked packages
-  origin = array(car$x, car$y)
-  print(car$x)
-  print(car$y)
-  pack = packLeft
-  #return(pack)
+heuristic = function(x, y, goal) { # Calculate heuristic function, number of steps between points
+  return(abs(goal[1] - x) + abs(goal[2] - y))
 }
 
-inFrontier = function(currNode, nodes) { # is this node in the frontier?
+neighbours = function(grid, x, y) {
+  nb = list()
+  i = 1
+  
+  if (y < grid) { # up
+    nb[i] = list(x = x, y = y+1)
+    i = i + 1
+  }
+  if (y > 1) { # down
+    nb[i] = list(x = x, y = y-1)
+    i = i + 1
+  }
+  if (x < grid) { # right
+    nb[i] = list(x = x+1, y = y)
+    i = i + 1
+  }
+  if (x > 1) { # left
+    nb[i] = list(x = x-1, y = y)
+    i = i + 1
+  }
+  
+  return(nb)
 }
 
-neighbours = function(node, grid) { # find neighbouring nodes
-}
-
-visited = function(currNode, nodes) { # have we been here before?
-}
-
-cost = function(currX, currY, neighbours, roads) { # find cheapest way forward
-}
-
-goal = function(currNode, goal) { # are we at goal?
+closestPack = function(car, packages) { # finds index of unpicked package closest to the car
+  # detta hjärtebarn ska ersättas av att a* för de fem olika paketen
+  distance = matrix(nrow = nrow(packages), ncol = 1)
+  for (i in 1:nrow(packages)) {
+    if (packages[i, 5] == 0) {
+      distance[i] = sqrt(abs((car$x - packages[i, 1])^2 + (car$y - packages[i, 2])^2))
+    } else {
+      distance[i] = 10^6
+    }
+  } 
+  return((which(distance == min(distance))))
 }
