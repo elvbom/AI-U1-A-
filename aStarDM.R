@@ -38,36 +38,49 @@ carReady = function(roads, car, packages) {
 aStar = function(roads, car, packages) { # A* algorithm
   vroads = roads$vroads
   hroads = roads$hroads
-  x = car$x # current x position
-  y = car$y # current y position
+  grid = ncol(roads$vroads)
+  x = car$x
+  y = car$y
+  
   load = car$load
   goal = list(x = packages[load, 1], y = packages[load, 2])
   
-  cost = matrix(c(100, 100, 100, 100), ncol=1, nrow = 4)
+  nodes = list() # make graph with all nodes
   
-  nb = neighbours(roads, car)
+  for (i in 1:grid) { # give nodes correct values
+    nodes[[i]] = list()
+    for (j in 1:grid) {
+      nodes[[i]][[j]] = list(x = i, y = j, h = heuristic(i, j, goal), cost = 0, frontier = FALSE, visited = FALSE)
+    }
+  }
+
+  # frontier[1] = list(x = x, y = y, h = heuristic(x, y, goal))
+  # i = 1
+  # j = 1
+  
+  #cost = cost(grid, current$x, current$y, goal, vroads, hroads)
+  
+  # while (length(frontier) != 0) {
+  #   nb = list(neighbours(grid, x, y))
+  #   for (k in 1:length(nb)) {
+  #     frontier[i] = nb[k] #här ska nod-koord + heur läggas ihop
+  #     i = i + 1
+  #   }
+    
+    # visited[j] = frontier[1]
+    # j = j + 1
+    # for (l in 2:length(frontier)) {
+    #   frontier[l-1] = frontier[l]
+    # }
+  
   #FIXME OK så måste beräkna längre än 1 nod... 
   #FIXME skriv funktion som besöker hela planen med visited och frontiers
-  if (y < grid) { # up
-    cost[1] = heuristic(x, y, goal) + vroads[x, y+1]
-  }
-  if (y > 1) { # down
-    cost[3] = heuristic(x, y, goal) + vroads[x, y-1]
-  }
-  if (x < grid) { # right
-    cost[2] = heuristic(x, y, goal) + hroads[x+1, y]
-  }
-  if (x > 1) { # left
-    cost[4] = heuristic(x, y, goal) + hroads[x-1, y]
-  }
-  
-  print(cost[(which(cost == min(cost)))[1]])
-  print(cost)
+
   return(car$load)
 }
 
 heuristic = function(x, y, goal) { # Calculate heuristic function, number of steps between points
-  return(abs(goal[1] - x) + abs(goal[2] - y))
+  return(abs(goal$x - x) + abs(goal$y - y))
 }
 
 neighbours = function(grid, x, y) {
@@ -92,6 +105,29 @@ neighbours = function(grid, x, y) {
   }
   
   return(nb)
+}
+
+cost = function(grid, x, y, goal, vroads, hroads) { # FIXME kolla kostnad för en nod istället?
+  cost = heuristic(x, y, goal) + vroads[x, y]
+  
+  #i = 1
+  # # FIXME check how vroads hroads actually works
+  # if (y < grid) { # up
+  #   cost[i] = heuristic(x, y+1, goal) + vroads[x, y+1]
+  #   i = i + 1
+  # }
+  # if (y > 1) { # down
+  #   cost[i] = heuristic(x, y-1, goal) + vroads[x, y-1]
+  #   i = i + 1
+  # }
+  # if (x < grid) { # right
+  #   cost[i] = heuristic(x+1, y, goal) + hroads[x+1, y]
+  #   i = i + 1
+  # }
+  # if (x > 1) { # left
+  #   cost[i] = heuristic(x-1, y, goal) + hroads[x-1, y]
+  #   i = i + 1
+  # }
 }
 
 closestPack = function(car, packages) { # finds index of unpicked package closest to the car
