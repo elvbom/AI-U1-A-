@@ -45,45 +45,43 @@ aStar = function(roads, car, packages) { # A* algorithm
   load = car$load
   goal = list(x = packages[load, 1], y = packages[load, 2])
   
-  nodes = list() # make graph with all nodes
+  node = list() # make graph with all nodes
   
   for (i in 1:grid) { # give nodes correct values
-    nodes[[i]] = list()
+    node[[i]] = list()
     for (j in 1:grid) {
-      nodes[[i]][[j]] = list(x = i, y = j, h = heuristic(i, j, goal), cost = 0, frontier = FALSE, visited = FALSE)
+      node[[i]][[j]] = list(x = i, y = j, h = heuristic(i, j, goal), frontier = FALSE, visited = FALSE)
     }
   }
+  
+  frontier = 1 # the node we're on, to be explored
+  
+  while (frontier > 0) {
+    #FIXME which node in frontier has lowest cost?
+    #FIXME which way from start-goal has lowest cost?
+    if (atGoal()) { # if the goal is at one of the neighbours
+      #FIXME how do we get there?   
+      # frontier - 1
+    }
+    #FIXME find neighbours around node
+    #FIXME explore these
+      #-visited?
+      #-what is cost getting there w traffic?
+      #update cost in frontier
+  }
 
-  # frontier[1] = list(x = x, y = y, h = heuristic(x, y, goal))
-  # i = 1
-  # j = 1
+  node[[x]][[j]]$visited = TRUE # we have visited the node we're on
   
   #cost = cost(grid, current$x, current$y, goal, vroads, hroads)
-  
-  # while (length(frontier) != 0) {
-  #   nb = list(neighbours(grid, x, y))
-  #   for (k in 1:length(nb)) {
-  #     frontier[i] = nb[k] #här ska nod-koord + heur läggas ihop
-  #     i = i + 1
-  #   }
-    
-    # visited[j] = frontier[1]
-    # j = j + 1
-    # for (l in 2:length(frontier)) {
-    #   frontier[l-1] = frontier[l]
-    # }
-  
-  #FIXME OK så måste beräkna längre än 1 nod... 
-  #FIXME skriv funktion som besöker hela planen med visited och frontiers
 
   return(car$load)
 }
 
-heuristic = function(x, y, goal) { # Calculate heuristic function, number of steps between points
+heuristic = function(x, y, goal) { # Calculate heuristic function, number of steps between start and goal
   return(abs(goal$x - x) + abs(goal$y - y))
 }
 
-neighbours = function(grid, x, y) {
+neighbours = function(grid, x, y) { # Find neighbours of node
   nb = list()
   i = 1
   
@@ -128,6 +126,10 @@ cost = function(grid, x, y, goal, vroads, hroads) { # FIXME kolla kostnad för e
   #   cost[i] = heuristic(x-1, y, goal) + hroads[x-1, y]
   #   i = i + 1
   # }
+}
+
+atGoal = function(x, y, goal) {
+  return(x == goal$x & y == goal$y)
 }
 
 closestPack = function(car, packages) { # finds index of unpicked package closest to the car
