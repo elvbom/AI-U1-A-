@@ -66,51 +66,40 @@ aStar = function(roads, car, packages) { # A* algorithm
     frontier = frontier - 1
 
     nb = neighbours(grid, currX, currY, vroads, hroads) # find its neighbours
+    nbSmall = list() # to keep track of "cheapest" neighbour
+    
     for (i in 1:length(nb)) {
       nx = nb[[i]]$x
       ny = nb[[i]]$y
       nr = nb[[i]]$r 
 
       if (nodes[[nx]][[ny]]$visited == TRUE || nodes[[nx]][[ny]]$frontier == TRUE) { # can we find a new cheaper way to visited/frontier node?
-        if ((node$h + nr) < node$cost) {
-          nodes[[nx]][[ny]]$cost = node$h + nb$r
+        if ((nodes[[nx]][[ny]]$h + nr) < nodes[[nx]][[ny]]$cost) {
+          nodes[[nx]][[ny]]$cost = nodes[[nx]][[ny]]$h + nr
+          print('TRUE')
+          print(nodes[[nx]][[ny]]$cost)
+          nbSmall[[i]] = nodes[[nx]][[ny]]$cost
+          print(nbSmall[[i]])
         }
       } else { # find travel cost to node
-        nodes[[nx]][[ny]]$cost = node$h + nb$r
+        nodes[[nx]][[ny]]$cost = nodes[[nx]][[ny]]$h + nr
+        nbSmall[[i]] = nodes[[nx]][[ny]]$cost
+        print('else')
+        print(nodes[[nx]][[ny]]$cost)
+        print(nbSmall[[i]])
         nodes[[nx]][[ny]]$frontier = TRUE
         frontier = frontier + 1
       }
-      
-      
-      
-      # nb[i] = här behöver jag fixa så att grannen får ngn sorts kostnad tsms med koordinater så att den går att jämföra
-      # så här behöver jag kolla vilken granne som har lägst kostnad, och gå mot den
-      # jag behöver också lägga in i totalCost så allt räknas ihop
+      print(nbSmall)
     }
+    
+    print('klar')
+    print(nbSmall)
+    # nb[i] = här behöver jag fixa så att grannen får ngn sorts kostnad tsms med koordinater så att den går att jämföra
+    # så här behöver jag kolla vilken granne som har lägst kostnad, och gå mot den
+    # jag behöver också lägga in i totalCost så allt räknas ihop
+    
   }
-    
-    # behöver uppdatera vilken nod vi står på sen genom att se vart minsta konstaden är och hoppa dit
-    
-      # else{
-      #   # calculate known cost of getting to that node, given current traffic
-      #   cost = nodes[[current$x]][[current$y]]$realCost + TravelCost(current, neighbourNode, roads)
-      #   # if the node isn't yet in the frontier, or there is a copy of it in the frontier but this one has lower cost
-      #   if ((!IsInFrontier(neighbourNode, nodes)) || (cost < nodes[[neighbourNode$x]][[neighbourNode$y]]$realCost)) {  
-      #     # add it to the frontier and set its attributes
-      #     nodes[[neighbourNode$x]][[neighbourNode$y]]$parent = c(current$x, current$y)
-      #     nodes[[neighbourNode$x]][[neighbourNode$y]]$realCost = cost
-      #     nodes[[neighbourNode$x]][[neighbourNode$y]]$f = cost + neighbourNode$h
-      #     
-      #     # if that node wasn't already in the frontier, add it, and update the size of the frontier
-      #     if (!IsInFrontier(neighbourNode, nodes)) {
-      #       nodes[[neighbourNode$x]][[neighbourNode$y]]$inFrontier = TRUE 
-      #       frontierSize =  frontierSize + 1
-      #     }
-      #   }
-      #   i = i + 1
-      # }
-  
-
   return(car$load)
 }
 
