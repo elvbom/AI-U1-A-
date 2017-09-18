@@ -56,7 +56,9 @@ aStar = function(roads, car, packages) { # A* algorithm
   }
   
   frontier = 1 # the node we're on, to be explored
-  nodes[[x]][[y]]$cost = nodes[[x]][[y]]$h # it's our starter node, so its cost = its heuristic
+  
+  #nodes[[x]][[y]]$cost = nodes[[x]][[y]]$h # it's our starter node, so its cost = its heuristic
+  
   currX = x
   currY = y
   
@@ -66,7 +68,7 @@ aStar = function(roads, car, packages) { # A* algorithm
     frontier = frontier - 1
 
     nb = neighbours(grid, currX, currY, vroads, hroads) # find its neighbours
-    nbSmall = list() # to keep track of "cheapest" neighbour
+    smallest = list() # to keep track of "cheapest" neighbour
     
     for (i in 1:length(nb)) {
       nx = nb[[i]]$x
@@ -74,27 +76,30 @@ aStar = function(roads, car, packages) { # A* algorithm
       nr = nb[[i]]$r 
 
       if (nodes[[nx]][[ny]]$visited == TRUE || nodes[[nx]][[ny]]$frontier == TRUE) { # can we find a new cheaper way to visited/frontier node?
-        if ((nodes[[nx]][[ny]]$h + nr) < nodes[[nx]][[ny]]$cost) {
+        print(nr)
+        print(nodes[[nx]][[ny]]$h)
+        print((nodes[[nx]][[ny]]$h + nr))
+        print('<')
+        print(nodes[[nx]][[ny]]$cost)
+        if ((nodes[[nx]][[ny]]$h + nr) < nodes[[nx]][[ny]]$cost) { # FIXME hitta varför dessa är samma
           nodes[[nx]][[ny]]$cost = nodes[[nx]][[ny]]$h + nr
-          print('TRUE')
-          print(nodes[[nx]][[ny]]$cost)
-          nbSmall[[i]] = nodes[[nx]][[ny]]$cost
-          print(nbSmall[[i]])
+          smallest[i] = nodes[[nx]][[ny]]$cost
+          
+          print('TRUE small')
+          print(smallest[i])
         }
       } else { # find travel cost to node
         nodes[[nx]][[ny]]$cost = nodes[[nx]][[ny]]$h + nr
-        nbSmall[[i]] = nodes[[nx]][[ny]]$cost
-        print('else')
-        print(nodes[[nx]][[ny]]$cost)
-        print(nbSmall[[i]])
+        smallest[i] = nodes[[nx]][[ny]]$cost
+        
+        print('else small')
+        print(smallest[i])
+        
         nodes[[nx]][[ny]]$frontier = TRUE
         frontier = frontier + 1
       }
-      print(nbSmall)
+      print(smallest)
     }
-    
-    print('klar')
-    print(nbSmall)
     # nb[i] = här behöver jag fixa så att grannen får ngn sorts kostnad tsms med koordinater så att den går att jämföra
     # så här behöver jag kolla vilken granne som har lägst kostnad, och gå mot den
     # jag behöver också lägga in i totalCost så allt räknas ihop
@@ -112,19 +117,19 @@ neighbours = function(grid, x, y, vroads, hroads) { # Find neighbours of node
   i = 1
   
   if (y < grid) { # up
-    nb[[i]] = list(x = x, y = y+1, r = vroads[x, y+1]) # r = cost from v-/hroads
+    nb[[i]] = list(x = x, y = y+1, r = vroads[y, x]) # r = cost from v-/hroads
     i = i + 1
   }
   if (y > 1) { # down
-    nb[[i]] = list(x = x, y = y-1, r = vroads[x, y])
+    nb[[i]] = list(x = x, y = y-1, r = vroads[y-1, x])
     i = i + 1
   }
   if (x < grid) { # right
-    nb[[i]] = list(x = x+1, y = y, r = hroads[x, y])
+    nb[[i]] = list(x = x+1, y = y, r = hroads[y, x])
     i = i + 1
   }
   if (x > 1) { # left
-    nb[[i]] = list(x = x-1, y = y, r = hroads[x-1, y])
+    nb[[i]] = list(x = x-1, y = y, r = hroads[y, x-1])
     i = i + 1
   }
   
