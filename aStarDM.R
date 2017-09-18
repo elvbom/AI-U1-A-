@@ -57,7 +57,8 @@ aStar = function(roads, car, packages) { # A* algorithm
   
   frontier = 1 # the node we're on, to be explored
   
-  #nodes[[x]][[y]]$cost = nodes[[x]][[y]]$h # it's our starter node, so its cost = its heuristic
+  nodes[[x]][[y]]$cost = nodes[[x]][[y]]$h # it's our starter node, so its cost = its heuristic
+  print(nodes[[x]][[y]]$h)
   
   currX = x
   currY = y
@@ -74,6 +75,7 @@ aStar = function(roads, car, packages) { # A* algorithm
       nx = nb[[i]]$x
       ny = nb[[i]]$y
       nr = nb[[i]]$r 
+      print(nodes[[nx]][[ny]]$cost)
 
       if (nodes[[nx]][[ny]]$visited == TRUE || nodes[[nx]][[ny]]$frontier == TRUE) { # can we find a new cheaper way to visited/frontier node?
         print(nr)
