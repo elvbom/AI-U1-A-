@@ -44,7 +44,7 @@ aStar = function(roads, car, packages) { # A* algorithm
   y = car$y
   
   load = car$load
-  goal = list(x = packages[load, 1], y = packages[load, 2])
+  goal = list(x = packages[load, 3], y = packages[load, 4])
   
   nodes = list() # make graph with all nodes
   
@@ -56,29 +56,33 @@ aStar = function(roads, car, packages) { # A* algorithm
   }
   
   frontier = 1 # the node we're on, to be explored
+  nodes[[x]][[y]]$cost = nodes[[x]][[y]]$h # it's our starter node, so its cost = its heuristic
   currX = x
   currY = y
   
   while (frontier > 0) { # FIXME bara så den inte blir evig?
-    node[[currX]][[currY]]$visited = TRUE # we have visited the node we're on
-    node[[currX]][[currY]]$frontier = FALSE
+    nodes[[currX]][[currY]]$visited = TRUE # we have visited the node we're on
+    nodes[[currX]][[currY]]$frontier = FALSE
     frontier = frontier - 1
-    # fixme flytta på begynnelsevillkor? tänk igenom loop bättre
-    node[[currX]][[currY]]$cost = node[[currX]][[currY]]$h # it's our starter node, so its cost = its heuristic
-    
-    nb = neighbours(grid, currX, currY) # find its neighbours
+
+    nb = neighbours(grid, currX, currY, vroads, hroads) # find its neighbours
     for (i in 1:length(nb)) {
-      node = nodes[[nb[i]$x]][[nb[i]$y]] # fetch neighbour from nodes list
-      
-      if (node$visited == TRUE || node$frontier == TRUE) { # can we find a new cheaper way to visited/frontier node?
-        if ((node$h + nb$r) < node$cost) {
-          node$cost = node$h + nb$r
+      nx = nb[[i]]$x
+      ny = nb[[i]]$y
+      nr = nb[[i]]$r 
+
+      if (nodes[[nx]][[ny]]$visited == TRUE || nodes[[nx]][[ny]]$frontier == TRUE) { # can we find a new cheaper way to visited/frontier node?
+        if ((node$h + nr) < node$cost) {
+          nodes[[nx]][[ny]]$cost = node$h + nb$r
         }
       } else { # find travel cost to node
-        node$cost = node$h + nb$r
-        node$frontier = TRUE
+        nodes[[nx]][[ny]]$cost = node$h + nb$r
+        nodes[[nx]][[ny]]$frontier = TRUE
         frontier = frontier + 1
       }
+      
+      
+      
       # nb[i] = här behöver jag fixa så att grannen får ngn sorts kostnad tsms med koordinater så att den går att jämföra
       # så här behöver jag kolla vilken granne som har lägst kostnad, och gå mot den
       # jag behöver också lägga in i totalCost så allt räknas ihop
@@ -87,7 +91,25 @@ aStar = function(roads, car, packages) { # A* algorithm
     
     # behöver uppdatera vilken nod vi står på sen genom att se vart minsta konstaden är och hoppa dit
     
-  }
+      # else{
+      #   # calculate known cost of getting to that node, given current traffic
+      #   cost = nodes[[current$x]][[current$y]]$realCost + TravelCost(current, neighbourNode, roads)
+      #   # if the node isn't yet in the frontier, or there is a copy of it in the frontier but this one has lower cost
+      #   if ((!IsInFrontier(neighbourNode, nodes)) || (cost < nodes[[neighbourNode$x]][[neighbourNode$y]]$realCost)) {  
+      #     # add it to the frontier and set its attributes
+      #     nodes[[neighbourNode$x]][[neighbourNode$y]]$parent = c(current$x, current$y)
+      #     nodes[[neighbourNode$x]][[neighbourNode$y]]$realCost = cost
+      #     nodes[[neighbourNode$x]][[neighbourNode$y]]$f = cost + neighbourNode$h
+      #     
+      #     # if that node wasn't already in the frontier, add it, and update the size of the frontier
+      #     if (!IsInFrontier(neighbourNode, nodes)) {
+      #       nodes[[neighbourNode$x]][[neighbourNode$y]]$inFrontier = TRUE 
+      #       frontierSize =  frontierSize + 1
+      #     }
+      #   }
+      #   i = i + 1
+      # }
+  
 
   return(car$load)
 }
@@ -96,51 +118,28 @@ heuristic = function(x, y, goal) { # Calculate heuristic function, number of ste
   return(abs(goal$x - x) + abs(goal$y - y))
 }
 
-neighbours = function(grid, x, y) { # Find neighbours of node
+neighbours = function(grid, x, y, vroads, hroads) { # Find neighbours of node
   nb = list()
   i = 1
   
   if (y < grid) { # up
-    nb[i] = list(x = x, y = y+1, r = vroads[x][y+1]) # r = cost from v-/hroads
+    nb[[i]] = list(x = x, y = y+1, r = vroads[x, y+1]) # r = cost from v-/hroads
     i = i + 1
   }
   if (y > 1) { # down
-    nb[i] = list(x = x, y = y-1, r = vroads[x][y])
+    nb[[i]] = list(x = x, y = y-1, r = vroads[x, y])
     i = i + 1
   }
   if (x < grid) { # right
-    nb[i] = list(x = x+1, y = y, r = hroads[x][y])
+    nb[[i]] = list(x = x+1, y = y, r = hroads[x, y])
     i = i + 1
   }
   if (x > 1) { # left
-    nb[i] = list(x = x-1, y = y, r = hroads[x-1][y])
+    nb[[i]] = list(x = x-1, y = y, r = hroads[x-1, y])
     i = i + 1
   }
   
   return(nb)
-}
-
-findCost = function(grid, x, y, goal, vroads, hroads) {
-  cost = heuristic(x, y, goal) + vroads[x, y]
-  
-  #i = 1
-  # # FIXME check how vroads hroads actually works
-  # if (y < grid) { # up
-  #   cost[i] = heuristic(x, y+1, goal) + vroads[x, y+1]
-  #   i = i + 1
-  # }
-  # if (y > 1) { # down
-  #   cost[i] = heuristic(x, y-1, goal) + vroads[x, y-1]
-  #   i = i + 1
-  # }
-  # if (x < grid) { # right
-  #   cost[i] = heuristic(x+1, y, goal) + hroads[x+1, y]
-  #   i = i + 1
-  # }
-  # if (x > 1) { # left
-  #   cost[i] = heuristic(x-1, y, goal) + hroads[x-1, y]
-  #   i = i + 1
-  # }
 }
 
 closestPack = function(car, packages) { # finds index of unpicked package closest to the car
